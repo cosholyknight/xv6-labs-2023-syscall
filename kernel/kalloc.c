@@ -80,3 +80,27 @@ kalloc(void)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
 }
+
+uint64
+getfreemem(void)
+{
+  // manage free mem
+  struct run *r;
+  uint64 nfreepages = 0;
+
+  // lock the kernel memory - other process can not change the freelist
+  acquire(&kmem.lock);
+
+  // access kernel memory freelist
+  r = kmem.freelist;
+
+  // count number of free page
+  while (r) {
+    r = r->next;
+    nfreepages++;
+  }
+
+  // release the kernel memory
+  release(&kmem.lock);
+  return nfreepages * PGSIZE;
+}

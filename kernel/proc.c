@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "sysinfo.h"
 
 struct cpu cpus[NCPU];
 
@@ -310,6 +311,8 @@ fork(void)
 
   safestrcpy(np->name, p->name, sizeof(p->name));
 
+  np->trace_mask = p->trace_mask;
+  
   pid = np->pid;
 
   release(&np->lock);
@@ -454,6 +457,7 @@ scheduler(void)
     // processes are waiting.
     intr_on();
 
+    int found = 0;
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
@@ -467,8 +471,14 @@ scheduler(void)
         // Process is done running for now.
         // It should have changed its p->state before coming back.
         c->proc = 0;
+        found = 1;
       }
       release(&p->lock);
+    }
+    if(found == 0) {
+      // nothing to run; stop running on this core until an interrupt.
+      intr_on();
+      asm volatile("wfi");
     }
   }
 }
@@ -685,4 +695,28 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+uint64
+getnproc()
+{
+  uint64 nUSEDprocs = 0;
+  struct proc* p;
+  for (p = proc; p < &proc[NPROC]; p++) {
+    if (p->state != UNUSED) nUSEDprocs++;
+  }
+  return nUSEDprocs;
+}
+
+int 
+sysinfo(uint64 addr)
+{
+  struct proc *p = myproc();
+  struct sysinfo info;
+
+  info.freemem = getfreemem();
+  info.nproc = getnproc();
+
+  if (copyout(p->pagetable, addr, (char*) &info, sizeof(info)) < 0) return -1;
+  return 0;
 }
