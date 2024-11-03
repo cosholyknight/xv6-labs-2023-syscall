@@ -8,7 +8,7 @@ Question3: What was the previous mode that the CPU was in?
 Answer: Before entering the kernel, the CPU was in user mode (SPP bit is 0)
 
 Question4: Write down the assembly instruction the kernel is panicing at. Which register corresponds to the variable num?
-Answer: The assembly instruction is lw a3,0(zero).
+Answer: The assembly instruction is lw a3,0(zero). The variable num corresponds to the register a3
 
 Question5: Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in scause above? (See description of scause in RISC-V privileged instructions)
 Answer: The kernel crashes due to attempting to load data from an unmapped memory address (address 0), confirmed by the scause value of 13 (page fault).
