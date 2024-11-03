@@ -1,17 +1,17 @@
 Question1: Looking at the backtrace output, which function called syscall?
-Answer: The function that called syscall is kernel/trap.c usertrap
+Answer: syscall is called by the usertrap function, as confirmed by the backtrace output.
 
 Question2: What is the value of p->trapframe->a7 and what does that value represent? (Hint: look user/initcode.S, the first user program xv6 starts.)
-Answer: The value is SYS_exec, representing the system call for executing a program.
+Answer: The value is SYS_exec, found in the kernel/syscall.h file.
 
 Question3: What was the previous mode that the CPU was in?
-Answer: The previous mode was machine mode.
+Answer: Before entering the kernel, the CPU was in user mode (SPP bit is 0)
 
 Question4: Write down the assembly instruction the kernel is panicing at. Which register corresponds to the variable num?
-Answer: The assembly instruction is ecall. The register corresponding to the variable num is a7.
+Answer: The assembly instruction is lw a3,0(zero).
 
 Question5: Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in scause above? (See description of scause in RISC-V privileged instructions)
-Answer: The kernel crashes because address 0 is not mapped in the kernel address space. This is confirmed by the value in scause, which indicates an illegal memory access.
+Answer: The kernel crashes due to attempting to load data from an unmapped memory address (address 0), confirmed by the scause value of 13 (page fault).
 
 Question6: What is the name of the binary that was running when the kernel paniced? What is its process id (pid)?
-Answer: The name of the binary is initcode, and its process id is 1.
+Answer: The binary name is initcode, and the pid is 1.
